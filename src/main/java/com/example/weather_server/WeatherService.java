@@ -1,5 +1,7 @@
 package com.example.weather_server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -9,12 +11,11 @@ import org.springframework.web.client.RestClient;
 public class WeatherService {
 
     private static final String API_HOST = "https://kr5egpeb92.re.qweatherapi.com";
-    private static final String LAT = "29.36";//重庆大学纬度
-    private static final String LON = "106.18";//重庆大学经度
-      // 上海经度
+    private static final String DEFAULTLAT = "29.36";//重庆大学虎溪校区纬度
+    private static final String DEFAULTLON = "106.18";//重庆大学虎溪校区经度
     private final RestClient client=RestClient.builder().build();
 
-    /** 调用和风"城市实时天气"，返回裁剪后的精简 JSON */
+    /** 调用和风"小时天气预报"，返回裁剪后的精简 JSON */
     public Map<String, Object> getWeather(String lat, String lon) throws Exception {
         String token = getToken();
         Map<String, Object> resp = client.get()
@@ -22,10 +23,33 @@ public class WeatherService {
             .header("Authorization", "Bearer " + token)
             .retrieve()
             .body(Map.class);
-        return resp;
+        return trim(resp);
     }
+
+    /** 裁剪 */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> trim(Map<String, Object> resp) {
+        List<Map<String, Object>> hours = new ArrayList<>();
+        for (Object o : (List<Object>) resp.get("hours")) {
+            Map<String, Object> h = (Map<String, Object>) o;
+            Map<String, Object> condition = (Map<String, Object>) h.get("condition");
+            Map<String, Object> temperature = (Map<String, Object>) h.get("temperature");
+            Map<String, Object> precipitation = (Map<String, Object>) h.get("precipitation");
+            Map<String, Object> intensity = (Map<String, Object>) precipitation.get("intensity");
+            hours.add(Map.of(
+                "forecastTime", h.get("forecastTime"),
+                "condition", Map.of("text", condition.get("text"), "code", condition.get("code")),
+                "temperature", Map.of("value", temperature.get("value")),
+                "precipitation", Map.of(
+                    "probability", precipitation.get("probability"),
+                    "type", precipitation.get("type"),
+                    "intensity", Map.of("value", intensity.get("value")))));
+        }
+        return Map.of("hours", hours);
+    }
+
     public Map<String, Object> getWeather() throws Exception {
-    return getWeather(LAT, LON);
+    return getWeather(DEFAULTLAT, DEFAULTLON);
 }
     
 
