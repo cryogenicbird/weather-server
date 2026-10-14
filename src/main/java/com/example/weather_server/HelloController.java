@@ -16,7 +16,7 @@ public class HelloController {
     }
 
     @GetMapping("/weather/hourly/{lat}/{lon}")
-    public Map<String, Object> weather(@PathVariable String lat, @PathVariable String lon) throws Exception {
+    public Map<String, Object> weather(@PathVariable String lat, @PathVariable String lon) {
         return weatherService.getWeather(lat, lon);
     }
 }

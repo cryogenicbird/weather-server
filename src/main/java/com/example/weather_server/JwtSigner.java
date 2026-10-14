@@ -15,8 +15,8 @@ public class JwtSigner {
     private static final String SUB = "3C2ERDUKBF";   // 项目ID
 
     /** 签一个 24 小时有效的 JWT */
-    public static String sign() throws Exception {
-        PrivateKey key = loadPrivateKey();
+    public static String sign(){
+        try{PrivateKey key = loadPrivateKey();
         long now = System.currentTimeMillis() / 1000;
 
         String header = String.format("{\"alg\":\"EdDSA\",\"kid\":\"%s\"}", KID);
@@ -33,6 +33,9 @@ public class JwtSigner {
         String s = base64Url(signer.sign());
 
         return h + "." + p + "." + s;
+    }catch (Exception e) {
+        throw new IllegalStateException("JWT 签名失败", e);
+    }
     }
 
     /** 从 resources 里读 PEM 文件，翻译成 Java 认识的私钥对象 */

@@ -6,24 +6,26 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Service
 public class WeatherService {
 
     private static final String API_HOST = "https://kr5egpeb92.re.qweatherapi.com";
-    private static final String DEFAULTLAT = "29.36";//重庆大学虎溪校区纬度
-    private static final String DEFAULTLON = "106.18";//重庆大学虎溪校区经度
     private final RestClient client=RestClient.builder().build();
 
     /** 调用和风"小时天气预报"，返回裁剪后的精简 JSON */
-    public Map<String, Object> getWeather(String lat, String lon) throws Exception {
-        String token = getToken();
+    public Map<String, Object> getWeather(String lat, String lon){
+        try{String token = getToken();
         Map<String, Object> resp = client.get()
             .uri(API_HOST + "/weather/v1/hourly/" + lat + "/" + lon + "?hours=240&localTime=true&lang=zh")
             .header("Authorization", "Bearer " + token)
             .retrieve()
             .body(Map.class);
         return trim(resp);
+        } catch (RestClientException e) {
+            throw new WeatherApiException("上游天气服务调用失败", e);
+        }
     }
 
     /** 裁剪 */
@@ -46,18 +48,13 @@ public class WeatherService {
                     "intensity", Map.of("value", intensity.get("value")))));
         }
         return Map.of("hours", hours);
-    }
-
-    public Map<String, Object> getWeather() throws Exception {
-    return getWeather(DEFAULTLAT, DEFAULTLON);
-}
-    
+    }    
 
     // ---- token 缓存：剩不到30秒才重签----
     private static String tokenCache;
     private static long tokenExpiresAt;
 
-    private static synchronized String getToken() throws Exception {
+    private static synchronized String getToken() {
         long now = System.currentTimeMillis() / 1000;
         if (tokenCache == null || now > tokenExpiresAt - 30) {
             tokenCache = JwtSigner.sign();
