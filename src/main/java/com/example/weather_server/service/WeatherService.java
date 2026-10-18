@@ -1,8 +1,11 @@
-package com.example.weather_server;
+package com.example.weather_server.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.example.weather_server.JwtSigner;
+import com.example.weather_server.WeatherApiException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
