@@ -17,5 +17,11 @@ jobs:
       # Windows 提交的文件没有执行权限，Linux 上先授权（经典坑）
       - name: 授权 mvnw 可执行
         run: chmod +x mvnw
+      # 真实私钥在 .gitignore 里（安全），CI 现场生成一次性测试密钥对：
+      # 测试只要求"签和验自洽"，不需要生产环境那一把
+      - name: 生成一次性测试密钥对
+        run: |
+          openssl genpkey -algorithm ED25519 -out src/main/resources/ed25519-private.pem
+          openssl pkey -in src/main/resources/ed25519-private.pem -pubout -out src/main/resources/ed25519-public.pem
       - name: 编译 + 测试
         run: ./mvnw test
