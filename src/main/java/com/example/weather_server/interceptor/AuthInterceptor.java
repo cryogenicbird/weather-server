@@ -1,10 +1,12 @@
-package com.example.weather_server;
+package com.example.weather_server.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.example.weather_server.UserJwt;
 
 /** 登录校验：所有需要鉴权的接口，先过这道门 */
 @Component
