@@ -31,5 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-src/main/resources/ed25519-private.pem
+# 密钥对不入库（CI/部署现场生成）；本地密钥脚本也不入库
 *.pem
+dev-env.ps1
