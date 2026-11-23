@@ -13,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,9 +39,18 @@ class AuthControllerTest {
     @MockitoBean
     private WeatherService weatherService;
 
+    // 假 Redis：限流层在每次请求时都会调用 increment，测试里不需要真 Redis
+    @MockitoBean
+    private StringRedisTemplate redis;
+
+    @MockitoBean
+    private ValueOperations<String, String> valueOps;
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        when(redis.opsForValue()).thenReturn(valueOps);
+        when(valueOps.increment(anyString())).thenReturn(1L);
     }
 
     @Test
