@@ -1,0 +1,21 @@
+# 部署到 /etc/systemd/system/weather-server-2.service
+# 说明：第二实例（8081），与第一实例共享同一 jar、MySQL、Redis。
+
+[Unit]
+Description=Weather proxy backend (SpringBoot) #2
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu
+ExecStart=/usr/bin/java -Xmx256m -XX:MaxMetaspaceSize=128m -jar /home/ubuntu/weather-server-0.0.1-SNAPSHOT.jar --server.port=8081
+Restart=always
+RestartSec=3
+Environment=DB_USER=app
+Environment=DB_PASS=CHANGE_ME
+Environment=LLM_API_KEY=CHANGE_ME
+Environment=JWT_PRIVATE_KEY_PATH=/home/ubuntu/secrets/ed25519-private.pem
+Environment=JWT_PUBLIC_KEY_PATH=/home/ubuntu/secrets/ed25519-public.pem
+
+[Install]
+WantedBy=multi-user.target
